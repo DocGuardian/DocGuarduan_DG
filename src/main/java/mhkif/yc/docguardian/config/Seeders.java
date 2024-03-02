@@ -10,7 +10,7 @@ public class Seeders implements CommandLineRunner {
     private static final Logger log = LoggerFactory.getLogger(Seeders.class);
 
     @Override
-    public void run(String... args) throws Exception{
+    public void run(String... args) throws Exception {
 
     }
 }
