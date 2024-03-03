@@ -13,19 +13,25 @@ import java.util.UUID;
 @Table(name = "users")
 public class User {
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID uuid;
+    @Column(nullable = false)
     private String first_name;
     private String last_name;
+    @Column(nullable = false, unique = true)
     private String email;
     private String password;
+    @Column(nullable = false, unique = true)
     private String phone;
     private String imageUrl;
+    @Column(columnDefinition = "boolean default false")
     private boolean isEnabled;
+    @Column(columnDefinition = "boolean default false")
     private boolean isLocked;
-    private boolean is_tfa_enabled;
+    @Column(columnDefinition = "boolean default false")
+    private boolean enable_tfa;
     @OneToOne()
     private Role role;
-
     private LocalDateTime createdAt;
     private LocalDateTime updateAt;
 
