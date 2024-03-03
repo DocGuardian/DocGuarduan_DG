@@ -8,6 +8,7 @@ import mhkif.yc.docguardian.dtos.responses.UserRes;
 import mhkif.yc.docguardian.entities.Role;
 import mhkif.yc.docguardian.entities.User;
 import mhkif.yc.docguardian.enums.RoleType;
+import mhkif.yc.docguardian.exceptions.BadRequestException;
 import mhkif.yc.docguardian.exceptions.EntityAlreadyExistsException;
 import mhkif.yc.docguardian.exceptions.NotFoundException;
 import mhkif.yc.docguardian.repositories.RoleRepository;
@@ -88,7 +89,15 @@ public class UserServiceImplementor implements UserService {
 
     @Override
     public User auth(String email, String password) {
-        return null;
+        User user = repository.findByEmail(email);
+        if(Objects.isNull(user)){
+            throw new NotFoundException("No User Found with this Email");
+        }
+        else if (!Objects.equals(user.getPassword(), password)) {
+            throw new BadRequestException("Incorrect Password");
+        }
+
+        return user;
 
     }
 
