@@ -12,6 +12,7 @@ import java.util.*;
 public class Room {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
     @ManyToOne(fetch = FetchType.EAGER)
     private User owner;

@@ -9,10 +9,11 @@ import java.util.UUID;
 
 @Entity
 @Data
-@Table(name = "user_projects")
-public class UserProjects {
+public class UserRooms {
+
     @Id
-    private UUID uuid;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
     @ManyToOne(fetch = FetchType.EAGER)
     private User user;
 

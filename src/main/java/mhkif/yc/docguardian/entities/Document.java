@@ -14,7 +14,8 @@ import java.util.UUID;
 @Data
 public class Document {
     @Id
-    private UUID uuid;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
     @ManyToOne
     private Folder folder;
     private String name;

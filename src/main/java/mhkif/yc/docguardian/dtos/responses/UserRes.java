@@ -11,7 +11,7 @@ import java.util.*;
 @Data
 public class UserRes {
 
-    private UUID uuid;
+    private UUID id;
     private String first_name;
     private String last_name;
     private String email;
