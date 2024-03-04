@@ -7,6 +7,10 @@ import mhkif.yc.docguardian.services.Service;
 
 public interface UserService extends Service<User, Integer, UserReq, UserRes> {
 
+    Boolean verifyToken(String token) throws Exception;
+
+    Boolean sendVerification(String token) throws Exception;
+
     UserRes getByEmail(Integer id);
     UserRes getByPhone(Integer id);
     UserRes update(User user);

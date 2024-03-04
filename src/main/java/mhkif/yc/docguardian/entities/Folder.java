@@ -12,7 +12,8 @@ import java.util.UUID;
 @Data
 public class Folder {
     @Id
-    private UUID uuid;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
     @ManyToOne
     private Room room;
     private String name;

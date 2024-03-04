@@ -7,15 +7,13 @@ import mhkif.yc.docguardian.dtos.requests.AuthReq;
 import mhkif.yc.docguardian.dtos.requests.UserReq;
 import mhkif.yc.docguardian.dtos.responses.UserRes;
 import mhkif.yc.docguardian.entities.User;
-import mhkif.yc.docguardian.services.implementations.UserServiceImplementor;
+import mhkif.yc.docguardian.services.implementations.UserServiceImpl;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Map;
 
@@ -24,7 +22,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final UserServiceImplementor service;
+    private final UserServiceImpl service;
     private final ModelMapper mapper;
 
     @PostMapping("login")
@@ -56,6 +54,46 @@ public class AuthController {
                         .message("User has been created successfully")
                         .developerMessage("User has been created successfully")
                         .data(Map.of("response", user))
+                        .build()
+        );
+    }
+
+    @GetMapping("account-verification")
+    public ResponseEntity<HttpResponse> confirmAccount(@RequestParam("token") String token) throws  Exception{
+        Boolean isSuccess = service.verifyToken(token);
+        if(!isSuccess){
+            return ResponseEntity.internalServerError().body(
+                    HttpResponse.builder()
+                            .timeStamp(LocalDateTime.now().toString())
+                            .status(HttpStatus.NOT_FOUND)
+                            .message("Account Not Found")
+                            .statusCode(HttpStatus.NOT_FOUND.value())
+                            .data(Map.of("Success",false ))
+                            .build()
+            );
+        }
+        return ResponseEntity.created(URI.create("")).body(
+                HttpResponse.builder()
+                        .timeStamp(LocalDateTime.now().toString())
+                        .status(HttpStatus.OK)
+                        .message("Account Verified")
+                        .statusCode(HttpStatus.OK.value())
+                        .data(Map.of("Success",true ))
+                        .build()
+        );
+    }
+
+    @GetMapping("account-verification/re-send")
+    public ResponseEntity<HttpResponse> reSendVerification(@RequestParam("token") String token) throws Exception {
+        Boolean isSuccess = service.sendVerification(token);
+
+        return ResponseEntity.ok().body(
+                HttpResponse.builder()
+                        .timeStamp(LocalDateTime.now().toString())
+                        .status(HttpStatus.OK)
+                        .message("Account Verified has been sent")
+                        .statusCode(HttpStatus.OK.value())
+                        .data(Map.of("Success",isSuccess ))
                         .build()
         );
     }
