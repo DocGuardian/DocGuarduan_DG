@@ -4,9 +4,12 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mhkif.yc.docguardian.dtos.HttpResponse;
 import mhkif.yc.docguardian.dtos.requests.AuthReq;
+import mhkif.yc.docguardian.dtos.requests.EmailReq;
+import mhkif.yc.docguardian.dtos.requests.PasswordReq;
 import mhkif.yc.docguardian.dtos.requests.UserReq;
 import mhkif.yc.docguardian.dtos.responses.UserRes;
 import mhkif.yc.docguardian.entities.User;
+import mhkif.yc.docguardian.services.UserService;
 import mhkif.yc.docguardian.services.implementations.UserServiceImpl;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
@@ -22,7 +25,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final UserServiceImpl service;
+    private final UserService service;
     private final ModelMapper mapper;
 
     @PostMapping("login")
@@ -58,7 +61,7 @@ public class AuthController {
         );
     }
 
-    @GetMapping("account-verification")
+    @GetMapping("account/verification")
     public ResponseEntity<HttpResponse> confirmAccount(@RequestParam("token") String token) throws  Exception{
         Boolean isSuccess = service.verifyToken(token);
         if(!isSuccess){
@@ -83,7 +86,7 @@ public class AuthController {
         );
     }
 
-    @GetMapping("account-verification/re-send")
+    @GetMapping("account/verification-re-send")
     public ResponseEntity<HttpResponse> reSendVerification(@RequestParam("token") String token) throws Exception {
         Boolean isSuccess = service.sendVerification(token);
 
@@ -94,6 +97,35 @@ public class AuthController {
                         .message("Account Verified has been sent")
                         .statusCode(HttpStatus.OK.value())
                         .data(Map.of("Success",isSuccess ))
+                        .build()
+        );
+    }
+
+    @PostMapping("account/reset-password")
+    public ResponseEntity<HttpResponse> sendResetPassword(@RequestBody @Valid EmailReq req) throws  Exception{
+        service.sendResetPassword(req.getEmail());
+
+        return ResponseEntity.created(URI.create("")).body(
+                HttpResponse.builder()
+                        .timeStamp(LocalDateTime.now().toString())
+                        .status(HttpStatus.OK)
+                        .message("Reset Password was sent")
+                        .statusCode(HttpStatus.OK.value())
+                        .data(Map.of("Success",true ))
+                        .build()
+        );
+    }
+    @PostMapping("account/reset-password/{token}")
+    public ResponseEntity<HttpResponse> resetPassword(@RequestBody @Valid PasswordReq req, @PathVariable("token") String token) throws  Exception{
+        service.resetPassword(token, req.getPassword());
+
+        return ResponseEntity.created(URI.create("")).body(
+                HttpResponse.builder()
+                        .timeStamp(LocalDateTime.now().toString())
+                        .status(HttpStatus.OK)
+                        .message("Password has been reset")
+                        .statusCode(HttpStatus.OK.value())
+                        .data(Map.of("Success",true ))
                         .build()
         );
     }

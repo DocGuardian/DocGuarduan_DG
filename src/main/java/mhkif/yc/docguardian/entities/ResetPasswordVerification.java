@@ -22,4 +22,9 @@ public class ResetPasswordVerification {
     @Column(nullable = false)
     private LocalDateTime expiredAt;
     private LocalDateTime verifiedAt;
+
+    public ResetPasswordVerification(){
+        this.createdAt = LocalDateTime.now();
+        this.token = UUID.randomUUID().toString();
+    }
 }
