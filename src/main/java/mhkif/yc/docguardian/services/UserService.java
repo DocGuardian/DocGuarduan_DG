@@ -5,7 +5,9 @@ import mhkif.yc.docguardian.dtos.responses.UserRes;
 import mhkif.yc.docguardian.entities.User;
 import mhkif.yc.docguardian.services.Service;
 
-public interface UserService extends Service<User, Integer, UserReq, UserRes> {
+import java.util.UUID;
+
+public interface UserService extends Service<User, UUID, UserReq, UserRes> {
 
     boolean verifyToken(String token) throws Exception;
 

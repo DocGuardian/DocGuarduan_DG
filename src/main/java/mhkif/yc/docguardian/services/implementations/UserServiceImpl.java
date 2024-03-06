@@ -22,6 +22,7 @@ import mhkif.yc.docguardian.services.UserService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -31,6 +32,7 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -49,18 +51,27 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public UserRes getById(Integer id) {
-        return null;
+    public UserRes getById(UUID id) {
+        Optional<User> userOp = repository.findById(id);
+        return userOp.map(
+                user -> mapper.map(user, UserRes.class)
+        ).orElseThrow(() -> new NotFoundException("User Not Exist with the given Id : " + id)
+        );
     }
 
     @Override
     public Page<UserRes> getAllPages(int page, int size) {
-        return null;
+        PageRequest pageRequest = PageRequest.of(page, size);
+        return repository.findAll(pageRequest).map(
+                user -> mapper.map(user, UserRes.class)
+        );
     }
 
     @Override
     public List<UserRes> getAll() {
-        return null;
+        return repository.findAll().stream().map(
+                user -> mapper.map(user, UserRes.class)
+        ).toList();
     }
 
     @Override

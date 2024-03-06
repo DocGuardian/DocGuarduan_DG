@@ -3,14 +3,13 @@ package mhkif.yc.docguardian.controllers;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mhkif.yc.docguardian.dtos.HttpResponse;
-import mhkif.yc.docguardian.dtos.requests.AuthReq;
+import mhkif.yc.docguardian.dtos.requests.EmailPasswordReq;
 import mhkif.yc.docguardian.dtos.requests.EmailReq;
 import mhkif.yc.docguardian.dtos.requests.PasswordReq;
 import mhkif.yc.docguardian.dtos.requests.UserReq;
 import mhkif.yc.docguardian.dtos.responses.UserRes;
 import mhkif.yc.docguardian.entities.User;
 import mhkif.yc.docguardian.services.UserService;
-import mhkif.yc.docguardian.services.implementations.UserServiceImpl;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +28,7 @@ public class AuthController {
     private final ModelMapper mapper;
 
     @PostMapping("login")
-    public ResponseEntity<HttpResponse> login(@Valid @RequestBody AuthReq request){
+    public ResponseEntity<HttpResponse> login(@Valid @RequestBody EmailPasswordReq request){
         User user = service.auth(request.getEmail(), request.getPassword());
 
         return ResponseEntity.accepted().body(
@@ -115,6 +114,7 @@ public class AuthController {
                         .build()
         );
     }
+
     @PostMapping("account/reset-password/{token}")
     public ResponseEntity<HttpResponse> resetPassword(@RequestBody @Valid PasswordReq req, @PathVariable("token") String token) throws  Exception{
         service.resetPassword(token, req.getPassword());

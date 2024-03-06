@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class AuthReq {
+public class EmailPasswordReq {
     @Valid
 
     @NotNull(message = "email field is required")

@@ -9,20 +9,13 @@ import java.util.UUID;
 
 @Entity
 @Data
-public class UserRooms {
+@Table(name = "room_users")
+public class RoomUsers {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
-    @ManyToOne(fetch = FetchType.EAGER)
-    private User user;
-
+    @EmbeddedId
+    private RoomUsersId id;
     @Enumerated(EnumType.STRING)
     protected Permission permission;
-
-    @ManyToOne(fetch = FetchType.EAGER)
-    private Room room;
-
     private LocalDateTime expiredAt;
     private LocalDateTime createdAt;
 }

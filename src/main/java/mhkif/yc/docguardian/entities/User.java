@@ -35,6 +35,9 @@ public class User {
     private LocalDateTime createdAt;
     private LocalDateTime updateAt;
 
-    @OneToMany(fetch = FetchType.LAZY , mappedBy = "owner")
+    @ManyToMany(cascade = CascadeType.ALL,
+            mappedBy = "users"
+    )
     private Set<Room> rooms = new HashSet<>();
+
 }
