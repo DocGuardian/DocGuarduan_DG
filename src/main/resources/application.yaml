@@ -1,0 +1,41 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/doc_guardian
+    username: postgres
+    password: password770
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+    generate-ddl: true
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  sql:
+    init:
+      mode: never #always
+      continue-on-error: true
+
+# ---------- Java Mail Sender Configuration ---------------
+  mail:
+    host: smtp.gmail.com
+    properties:
+      verify:
+        host: http://localhost:4200/
+      mail:
+        smtp:
+          starttls:
+            enable: true
+            required: true
+          auth: true
+    port: 587
+    username: abdelmalekachkif@gmail.com
+    password: hfvwrhykmrftlqay
+    default-encoding: UTF-8
+
+server:
+  error:
+    include-message: always
