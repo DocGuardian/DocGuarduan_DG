@@ -7,15 +7,13 @@ import mhkif.yc.docguardian.dtos.requests.UserReq;
 import mhkif.yc.docguardian.dtos.responses.UserRes;
 import mhkif.yc.docguardian.entities.AccountVerification;
 import mhkif.yc.docguardian.entities.ResetPasswordVerification;
-import mhkif.yc.docguardian.entities.Role;
 import mhkif.yc.docguardian.entities.User;
-import mhkif.yc.docguardian.enums.RoleType;
+import mhkif.yc.docguardian.enums.Role;
 import mhkif.yc.docguardian.exceptions.BadRequestException;
 import mhkif.yc.docguardian.exceptions.EntityAlreadyExistsException;
 import mhkif.yc.docguardian.exceptions.NotFoundException;
 import mhkif.yc.docguardian.repositories.AccountVerificationRepository;
 import mhkif.yc.docguardian.repositories.ResetPasswordVerificationRepository;
-import mhkif.yc.docguardian.repositories.RoleRepository;
 import mhkif.yc.docguardian.repositories.UserRepository;
 import mhkif.yc.docguardian.services.EmailService;
 import mhkif.yc.docguardian.services.UserService;
@@ -40,7 +38,6 @@ import java.util.UUID;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository repository;
-    private final RoleRepository roleRepository;
     private final AccountVerificationRepository accountVerificationRepo;
     private final ResetPasswordVerificationRepository resetPasswordRepo;
     private final EmailService emailService;
@@ -48,6 +45,8 @@ public class UserServiceImpl implements UserService {
 
     @Value("${spring.mail.properties.verify.host}")
     private String host;
+    private String sendingBy = "abdelmalekachkif@gmail.com";
+
 
 
     @Override
@@ -77,18 +76,13 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserRes create(UserReq request) {
         User existingUserEmail = repository.findByEmail(request.getEmail());
-        Role user_role = roleRepository.findByName(RoleType.ROLE_USER.name());
-
 
         if (Objects.nonNull(existingUserEmail)) {
             throw new EntityAlreadyExistsException("User already exists with the given Email.");
         }
-        else if (Objects.isNull(user_role)) {
-            throw new NotFoundException("User Role not found");
-        }
 
         User user = mapper.map(request, User.class);
-        user.setRole(user_role);
+        user.setRole(Role.ROLE_USER);
         user.setCreatedAt(LocalDateTime.now());
         User savedUser = repository.save(user);
 
@@ -102,7 +96,7 @@ public class UserServiceImpl implements UserService {
         String url = "users/auth/account-verification/";
         String subject = "DocGuardian : Email Verification ";
         String body = verificationEmailMessage(name, url, this.host,accountVerification.getToken());
-        emailService.sendSimpleMailMessage(name, sendingTo, subject, body);
+        emailService.sendSimpleMailMessage(name, this.sendingBy ,sendingTo, subject, body);
 
         return mapper.map(savedUser, UserRes.class);
     }
@@ -160,7 +154,7 @@ public class UserServiceImpl implements UserService {
         String url = "users/auth/account/verification/";
         String subject = "DocGuardian : Email Verification ";
         String body = verificationEmailMessage(name, url, this.host,new_confirmation.getToken());
-        emailService.sendSimpleMailMessage(name, sendingTo, subject, body);
+        emailService.sendSimpleMailMessage(name,this.sendingBy, sendingTo, subject, body);
 
         return true;
     }
@@ -182,7 +176,7 @@ public class UserServiceImpl implements UserService {
         String url = "users/auth/account/reset-password/";
         String subject = "DocGuardian : Reset Password ";
         String body = resetPasswordMessage(name, url, this.host,resetPassword.getToken());
-        emailService.sendSimpleMailMessage(name, sendingTo, subject, body);
+        emailService.sendSimpleMailMessage(name, this.sendingBy, sendingTo, subject, body);
 
     }
 

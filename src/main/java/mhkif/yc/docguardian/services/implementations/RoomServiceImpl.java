@@ -4,15 +4,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mhkif.yc.docguardian.dtos.requests.RoomReq;
 import mhkif.yc.docguardian.dtos.responses.RoomRes;
-import mhkif.yc.docguardian.entities.Room;
-import mhkif.yc.docguardian.entities.RoomUsers;
-import mhkif.yc.docguardian.entities.RoomUsersId;
-import mhkif.yc.docguardian.entities.User;
-import mhkif.yc.docguardian.enums.Permission;
+import mhkif.yc.docguardian.dtos.responses.UserRes;
+import mhkif.yc.docguardian.entities.*;
+import mhkif.yc.docguardian.enums.RoomPermission;
 import mhkif.yc.docguardian.exceptions.NotFoundException;
 import mhkif.yc.docguardian.repositories.*;
+import mhkif.yc.docguardian.services.EmailService;
 import mhkif.yc.docguardian.services.RoomService;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -30,7 +30,12 @@ public class RoomServiceImpl implements RoomService {
     private final RoomRepository repository;
     private final UserRepository userRepository;
     private final RoomUsersRepository roomUsersRepository;
+    private final InvitationRepository invitationRepository;
+    private final EmailService emailService;
     private  final ModelMapper mapper;
+
+    @Value("${spring.mail.properties.verify.host}")
+    private String host;
 
     @Override
     public RoomRes getById(UUID id) {
@@ -72,7 +77,7 @@ public class RoomServiceImpl implements RoomService {
 
         RoomUsers roomUsers = new RoomUsers();
         roomUsers.setId(roomUsersId);
-        roomUsers.setPermission(Permission.ADMIN);
+        roomUsers.setPermission(RoomPermission.ADMIN);
         roomUsers.setExpiredAt(LocalDateTime.now().plusDays(10));
         roomUsers.setCreatedAt(LocalDateTime.now());
 
@@ -85,5 +90,45 @@ public class RoomServiceImpl implements RoomService {
     @Override
     public RoomRes update(RoomRes room) {
         return null;
+    }
+
+    @Override
+    public RoomRes inviteUserViaEmail(UUID id, UUID userId, String recipientEmail) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+        Room room = repository.findById(id).orElseThrow(() -> new NotFoundException("Room not found"));
+        if(recipientEmail == null || recipientEmail.isEmpty()){
+           throw  new NotFoundException("Recipient email not found");
+        }
+
+        String name = user.getFirst_name()+ " "+ user.getLast_name();
+        String url = "http://localhost:8080/doc_guardian/api/v1/rooms/"+id;
+        String subject = "DocGuardian : Room Invitation ";
+        String body = invitationEmailMessage(name, url, this.host);
+        emailService.sendSimpleMailMessage(name, user.getEmail(), recipientEmail, subject, body);
+
+
+        return mapper.map(room, RoomRes.class);
+    }
+
+    @Override
+    public RoomRes inviteUser(UUID id, UUID userId, UUID recipientId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+        User recipient = userRepository.findById(recipientId).orElseThrow(() -> new NotFoundException("Recipient not found"));
+        Room room = repository.findById(id).orElseThrow(() -> new NotFoundException("Room not found"));
+        Invitation invitation = new Invitation();
+        invitation.setRoom(room);
+        invitation.setSender(user);
+        invitation.setRecipient(recipient);
+        invitation.setCreatedAt(LocalDateTime.now());
+        invitationRepository.save(invitation);
+        return mapper.map(room, RoomRes.class);
+    }
+
+    private String invitationEmailMessage(String name, String url, String host) {
+        return "Hello , \n\n" +
+                "You have been invited by "+name+"to a virtual room in DocGuardian ," +
+                " Please click the link below to see the invitation  . \n\n" +
+                url +" \n\n" +
+                "The Support Team DocGuardian .";
     }
 }

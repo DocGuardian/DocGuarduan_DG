@@ -41,5 +41,8 @@ public class Room {
     @OneToMany(mappedBy = "room")
     private List<Folder> folders = new ArrayList<>();
 
+    @OneToMany(mappedBy = "room")
+    private List<Invitation> invitations;
+
 
 }

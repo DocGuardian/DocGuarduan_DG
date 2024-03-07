@@ -11,19 +11,16 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class EmailServiceImpl implements EmailService {
 
-
-    @Value("${spring.mail.username}")
-    private String fromEmail;
     private final JavaMailSender emailSender;
 
 
 
     @Override
-    public void sendSimpleMailMessage(String name, String to, String subject, String body) {
+    public void sendSimpleMailMessage(String name, String by, String to, String subject, String body) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setSubject(subject);
-            message.setFrom(fromEmail);
+            message.setFrom(by);
             message.setTo(to); // to
             message.setText(body);
             emailSender.send(message);
@@ -34,27 +31,27 @@ public class EmailServiceImpl implements EmailService {
     }
 
     @Override
-    public void sendMimeMessageWithAttachments(String name, String to, String token) {
+    public void sendMimeMessageWithAttachments(String name, String by, String to, String token) {
 
     }
 
     @Override
-    public void sendMimeMessageWithEmbeddedImages(String name, String to, String token) {
+    public void sendMimeMessageWithEmbeddedImages(String name, String by,String to, String token) {
 
     }
 
     @Override
-    public void sendMimeMessageWithEmbeddedFiles(String name, String to, String token) {
+    public void sendMimeMessageWithEmbeddedFiles(String name, String by,String to, String token) {
 
     }
 
     @Override
-    public void sendHtmlEmail(String name, String to, String token) {
+    public void sendHtmlEmail(String name, String by,String to, String token) {
 
     }
 
     @Override
-    public void sendHtmlEmailWithEmbeddedFiles(String name, String to, String token) {
+    public void sendHtmlEmailWithEmbeddedFiles(String name,String by, String to, String token) {
 
     }
 

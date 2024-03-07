@@ -1,8 +1,7 @@
 package mhkif.yc.docguardian.dtos.responses;
 
 import lombok.Data;
-import mhkif.yc.docguardian.entities.Role;
-import mhkif.yc.docguardian.entities.Room;
+import mhkif.yc.docguardian.enums.Role;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;

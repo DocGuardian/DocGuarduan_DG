@@ -2,11 +2,10 @@ package mhkif.yc.docguardian.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
+import mhkif.yc.docguardian.enums.Role;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @Data
@@ -30,7 +29,7 @@ public class User {
     private boolean isLocked;
     @Column(columnDefinition = "boolean default false")
     private boolean enable_tfa;
-    @OneToOne()
+    @Enumerated(EnumType.STRING)
     private Role role;
     private LocalDateTime createdAt;
     private LocalDateTime updateAt;
@@ -38,6 +37,9 @@ public class User {
     @ManyToMany(cascade = CascadeType.ALL,
             mappedBy = "users"
     )
-    private Set<Room> rooms = new HashSet<>();
+    private List<Room> rooms = new ArrayList<>();
+
+    @OneToMany(mappedBy = "recipient")
+    private List<Invitation> receivedInvitations;
 
 }
