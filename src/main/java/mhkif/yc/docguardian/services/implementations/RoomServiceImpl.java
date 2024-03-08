@@ -6,10 +6,12 @@ import mhkif.yc.docguardian.dtos.requests.RoomReq;
 import mhkif.yc.docguardian.dtos.responses.RoomRes;
 import mhkif.yc.docguardian.dtos.responses.UserRes;
 import mhkif.yc.docguardian.entities.*;
+import mhkif.yc.docguardian.enums.InvitationStatus;
 import mhkif.yc.docguardian.enums.RoomPermission;
 import mhkif.yc.docguardian.exceptions.NotFoundException;
 import mhkif.yc.docguardian.repositories.*;
 import mhkif.yc.docguardian.services.EmailService;
+import mhkif.yc.docguardian.services.InvitationService;
 import mhkif.yc.docguardian.services.RoomService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
@@ -69,6 +71,7 @@ public class RoomServiceImpl implements RoomService {
         room.setStorage(0);
         room.setCreatedAt(LocalDateTime.now());
         room.getUsers().add(owner);
+
         Room savedRoom = repository.save(room);
 
         RoomUsersId roomUsersId = new RoomUsersId();
@@ -82,8 +85,13 @@ public class RoomServiceImpl implements RoomService {
         roomUsers.setCreatedAt(LocalDateTime.now());
 
         roomUsersRepository.save(roomUsers);
+        /*
+        RoomRes mappedRoom = mapper.map(savedRoom, RoomRes.class);
+        mappedRoom.setUsersRes(savedRoom.getUsers().stream().map(
+                user -> mapper.map(user, UserRes.class)
+        ).toList());
 
-
+         */
         return mapper.map(savedRoom, RoomRes.class);
     }
 
@@ -119,6 +127,7 @@ public class RoomServiceImpl implements RoomService {
         invitation.setRoom(room);
         invitation.setSender(user);
         invitation.setRecipient(recipient);
+        invitation.setStatus(InvitationStatus.WAITING);
         invitation.setCreatedAt(LocalDateTime.now());
         invitationRepository.save(invitation);
         return mapper.map(room, RoomRes.class);

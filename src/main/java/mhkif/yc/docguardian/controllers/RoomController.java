@@ -66,7 +66,7 @@ public class RoomController {
 
     @PostMapping("{id}/invite")
     public ResponseEntity<HttpResponse> inviteUser(@RequestBody @Valid RoomInviteDto dto, @PathVariable UUID id){
-        RoomRes room = service.inviteUser(id, dto.getUserId(), dto.getRecipientId());
+        RoomRes room = service.inviteUser(id, dto.getSenderId(), dto.getRecipientId());
         return ResponseEntity.accepted().body(
                 HttpResponse.builder()
                         .timeStamp(LocalDateTime.now().toString())
@@ -79,7 +79,6 @@ public class RoomController {
                         .build()
         );
     }
-
 
     @GetMapping("/pages")
     public ResponseEntity<Page<RoomRes>> getPagination(@RequestParam(required = false, defaultValue = "0") int page, @RequestParam(required = false,defaultValue = "5") int size){

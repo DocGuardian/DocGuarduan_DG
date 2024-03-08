@@ -1,10 +1,12 @@
 package mhkif.yc.docguardian.services;
 
+import mhkif.yc.docguardian.dtos.InvitationDto;
 import mhkif.yc.docguardian.dtos.requests.UserReq;
 import mhkif.yc.docguardian.dtos.responses.UserRes;
 import mhkif.yc.docguardian.entities.User;
 import mhkif.yc.docguardian.services.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface UserService extends Service<User, UUID, UserReq, UserRes> {
@@ -26,4 +28,5 @@ public interface UserService extends Service<User, UUID, UserReq, UserRes> {
     boolean lockAccount(String email);
     boolean enableTwoFactorAuth(String email);
 
+    List<InvitationDto> getInvitations(UUID id);
 }

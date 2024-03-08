@@ -3,9 +3,11 @@ package mhkif.yc.docguardian.services.implementations;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mhkif.yc.docguardian.dtos.InvitationDto;
 import mhkif.yc.docguardian.dtos.requests.UserReq;
 import mhkif.yc.docguardian.dtos.responses.UserRes;
 import mhkif.yc.docguardian.entities.AccountVerification;
+import mhkif.yc.docguardian.entities.Invitation;
 import mhkif.yc.docguardian.entities.ResetPasswordVerification;
 import mhkif.yc.docguardian.entities.User;
 import mhkif.yc.docguardian.enums.Role;
@@ -13,6 +15,7 @@ import mhkif.yc.docguardian.exceptions.BadRequestException;
 import mhkif.yc.docguardian.exceptions.EntityAlreadyExistsException;
 import mhkif.yc.docguardian.exceptions.NotFoundException;
 import mhkif.yc.docguardian.repositories.AccountVerificationRepository;
+import mhkif.yc.docguardian.repositories.InvitationRepository;
 import mhkif.yc.docguardian.repositories.ResetPasswordVerificationRepository;
 import mhkif.yc.docguardian.repositories.UserRepository;
 import mhkif.yc.docguardian.services.EmailService;
@@ -41,6 +44,7 @@ public class UserServiceImpl implements UserService {
     private final AccountVerificationRepository accountVerificationRepo;
     private final ResetPasswordVerificationRepository resetPasswordRepo;
     private final EmailService emailService;
+    private final InvitationRepository invitationRepository;
     private  final ModelMapper mapper;
 
     @Value("${spring.mail.properties.verify.host}")
@@ -261,6 +265,18 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean enableTwoFactorAuth(String email) {
         return false;
+    }
+
+    @Override
+    public List<InvitationDto> getInvitations(UUID id) {
+        User user = repository.findById(id)
+                .orElseThrow(() ->
+                        new EntityNotFoundException("User not found with the given credential.")
+                );
+
+        return invitationRepository.findAllByRecipient(user)
+                .stream().map(invitation -> mapper.map(invitation, InvitationDto.class))
+                .toList();
     }
 
     private String verificationEmailMessage(String name, String url, String host, String token) {

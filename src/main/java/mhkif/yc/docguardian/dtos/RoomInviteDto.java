@@ -9,8 +9,8 @@ import java.util.UUID;
 
 @Data
 public class RoomInviteDto {
-    @NotNull(message = "user id field is required")
-    private UUID userId;
+    @NotNull(message = "sender id field is required")
+    private UUID senderId;
 
     @NotNull(message = "recipient id field is required")
     private UUID recipientId;
