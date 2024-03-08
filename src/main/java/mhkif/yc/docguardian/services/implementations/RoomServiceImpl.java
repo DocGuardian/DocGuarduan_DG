@@ -8,6 +8,7 @@ import mhkif.yc.docguardian.dtos.responses.UserRes;
 import mhkif.yc.docguardian.entities.*;
 import mhkif.yc.docguardian.enums.InvitationStatus;
 import mhkif.yc.docguardian.enums.RoomPermission;
+import mhkif.yc.docguardian.enums.RoomRoles;
 import mhkif.yc.docguardian.exceptions.NotFoundException;
 import mhkif.yc.docguardian.repositories.*;
 import mhkif.yc.docguardian.services.EmailService;
@@ -80,7 +81,7 @@ public class RoomServiceImpl implements RoomService {
 
         RoomUsers roomUsers = new RoomUsers();
         roomUsers.setId(roomUsersId);
-        roomUsers.setPermission(RoomPermission.ADMIN);
+        roomUsers.setPermission(RoomRoles.ADMIN);
         roomUsers.setExpiredAt(LocalDateTime.now().plusDays(10));
         roomUsers.setCreatedAt(LocalDateTime.now());
 

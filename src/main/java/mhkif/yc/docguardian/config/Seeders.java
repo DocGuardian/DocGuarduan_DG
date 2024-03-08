@@ -2,7 +2,8 @@ package mhkif.yc.docguardian.config;
 
 import lombok.RequiredArgsConstructor;
 import mhkif.yc.docguardian.entities.User;
-import mhkif.yc.docguardian.enums.Role;
+import static mhkif.yc.docguardian.enums.Role.ROLE_ADMIN;
+import static mhkif.yc.docguardian.enums.Role.ROLE_USER;
 import mhkif.yc.docguardian.repositories.RoomRepository;
 import mhkif.yc.docguardian.repositories.RoomUsersRepository;
 import mhkif.yc.docguardian.repositories.UserRepository;
@@ -37,7 +38,7 @@ public class Seeders implements CommandLineRunner {
         user.setEmail("aziz@gmail.com");
         user.setPassword("aqwzsxedc");
         user.setPhone("0661311145");
-        user.setRole(Role.ROLE_USER);
+        user.setRole(ROLE_USER);
         user.setCreatedAt(LocalDateTime.now());
 
         repository.save(user);
@@ -51,7 +52,7 @@ public class Seeders implements CommandLineRunner {
         user.setEmail("malikhkif@gmail.com");
         user.setPassword("aqwzsxedc");
         user.setPhone("0771311145");
-        user.setRole(Role.ROLE_ADMIN);
+        user.setRole(ROLE_ADMIN);
         user.setCreatedAt(LocalDateTime.now());
 
         repository.save(user);
