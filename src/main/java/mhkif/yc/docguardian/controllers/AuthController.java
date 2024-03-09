@@ -67,8 +67,8 @@ public class AuthController {
         );
     }
 
-    @GetMapping("account/verification")
-    public ResponseEntity<HttpResponse> confirmAccount(@RequestParam("token") String token) throws  Exception{
+    @GetMapping("account-verification")
+    public ResponseEntity<HttpResponse> accountVerification(@RequestParam("token") String token) throws  Exception{
         Boolean isSuccess = service.verifyToken(token);
         if(!isSuccess){
             return ResponseEntity.internalServerError().body(
@@ -92,7 +92,7 @@ public class AuthController {
         );
     }
 
-    @GetMapping("account/verification-re-send")
+    @GetMapping("account-verification-re-send")
     public ResponseEntity<HttpResponse> reSendVerification(@RequestParam("token") String token) throws Exception {
         Boolean isSuccess = service.sendVerification(token);
 
@@ -107,7 +107,7 @@ public class AuthController {
         );
     }
 
-    @PostMapping("account/reset-password")
+    @PostMapping("account-reset-password")
     public ResponseEntity<HttpResponse> sendResetPassword(@RequestBody @Valid EmailReq req) throws  Exception{
         service.sendResetPassword(req.getEmail());
 
@@ -122,7 +122,7 @@ public class AuthController {
         );
     }
 
-    @PostMapping("account/reset-password/{token}")
+    @PostMapping("account-reset-password/{token}")
     public ResponseEntity<HttpResponse> resetPassword(@RequestBody @Valid PasswordReq req, @PathVariable("token") String token) throws  Exception{
         service.resetPassword(token, req.getPassword());
 
