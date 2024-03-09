@@ -4,14 +4,9 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public enum Permission {
-    // SYS_ADMIN Permissions
-    SYS_ADMIN_READ("sys_admin:read"),
-    SYS_ADMIN_UPDATE("sys_admin:update"),
-    SYS_ADMIN_CREATE("sys_admin:create"),
-    SYS_ADMIN_DELETE("sys_admin:delete"),
+public enum RoomPermission {
 
-    // ADMIN Permissions
+    // ROOM ADMIN Permissions
     ADMIN_READ("admin:read"),
     ADMIN_UPDATE("admin:update"),
     ADMIN_CREATE("admin:create"),
@@ -24,11 +19,17 @@ public enum Permission {
     MANAGER_DELETE("manager:delete"),
 
     // USER Permissions
-    USER_READ("user:read"),
-    USER_UPDATE("user:update"),
-    USER_CREATE("user:create"),
-    USER_DELETE("user:delete");
-    
+    EDITOR_READ("editor:read"),
+    EDITOR_UPDATE("editor:update"),
+    EDITOR_CREATE("editor:create"),
+    EDITOR_DELETE("editor:delete"),
+
+    // USER Permissions
+    FILE_SHARER_READ("file_sharer:read"),
+    FILE_SHARER_UPDATE("file_sharer:update"),
+    FILE_SHARER_CREATE("file_sharer:create"),
+    FILE_SHARER_DELETE("file_sharer:delete");
+
     @Getter
     private final String permission;
 }

@@ -1,8 +1,9 @@
 package mhkif.yc.docguardian.dtos.responses;
 
 import lombok.Data;
-import mhkif.yc.docguardian.entities.Role;
-import mhkif.yc.docguardian.entities.Room;
+import mhkif.yc.docguardian.dtos.InvitationDto;
+import mhkif.yc.docguardian.entities.Invitation;
+import mhkif.yc.docguardian.enums.Role;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
@@ -25,5 +26,7 @@ public class UserRes {
     private Role role;
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updateAt;
+
 }

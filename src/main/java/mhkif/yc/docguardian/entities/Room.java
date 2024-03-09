@@ -27,9 +27,22 @@ public class Room {
     @Enumerated(EnumType.STRING)
     private RoomType type;
 
-
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinTable(name = "room_users",
+            joinColumns = {
+                    @JoinColumn(name = "room_id")
+            },
+            inverseJoinColumns = {
+                    @JoinColumn(name = "user_id")
+            }
+    )
+    private List<User> users = new ArrayList<>();
 
     @OneToMany(mappedBy = "room")
     private List<Folder> folders = new ArrayList<>();
+
+    @OneToMany(mappedBy = "room")
+    private List<Invitation> invitations;
+
 
 }

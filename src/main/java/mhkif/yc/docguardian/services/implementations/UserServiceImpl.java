@@ -3,25 +3,27 @@ package mhkif.yc.docguardian.services.implementations;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mhkif.yc.docguardian.dtos.InvitationDto;
 import mhkif.yc.docguardian.dtos.requests.UserReq;
 import mhkif.yc.docguardian.dtos.responses.UserRes;
 import mhkif.yc.docguardian.entities.AccountVerification;
 import mhkif.yc.docguardian.entities.ResetPasswordVerification;
-import mhkif.yc.docguardian.entities.Role;
 import mhkif.yc.docguardian.entities.User;
-import mhkif.yc.docguardian.enums.RoleType;
+import mhkif.yc.docguardian.enums.Role;
 import mhkif.yc.docguardian.exceptions.BadRequestException;
 import mhkif.yc.docguardian.exceptions.EntityAlreadyExistsException;
 import mhkif.yc.docguardian.exceptions.NotFoundException;
 import mhkif.yc.docguardian.repositories.AccountVerificationRepository;
+import mhkif.yc.docguardian.repositories.InvitationRepository;
 import mhkif.yc.docguardian.repositories.ResetPasswordVerificationRepository;
-import mhkif.yc.docguardian.repositories.RoleRepository;
 import mhkif.yc.docguardian.repositories.UserRepository;
 import mhkif.yc.docguardian.services.EmailService;
 import mhkif.yc.docguardian.services.UserService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -31,6 +33,7 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -38,46 +41,54 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository repository;
-    private final RoleRepository roleRepository;
     private final AccountVerificationRepository accountVerificationRepo;
     private final ResetPasswordVerificationRepository resetPasswordRepo;
     private final EmailService emailService;
-    private  final ModelMapper mapper;
+    private final InvitationRepository invitationRepository;
+    private final PasswordEncoder encoder;
+    private final ModelMapper mapper;
 
     @Value("${spring.mail.properties.verify.host}")
     private String host;
+    private String sendingBy = "abdelmalekachkif@gmail.com";
+
 
 
     @Override
-    public UserRes getById(Integer id) {
-        return null;
+    public UserRes getById(UUID id) {
+        Optional<User> userOp = repository.findById(id);
+        return userOp.map(
+                user -> mapper.map(user, UserRes.class)
+        ).orElseThrow(() -> new NotFoundException("User Not Exist with the given Id : " + id)
+        );
     }
 
     @Override
     public Page<UserRes> getAllPages(int page, int size) {
-        return null;
+        PageRequest pageRequest = PageRequest.of(page, size);
+        return repository.findAll(pageRequest).map(
+                user -> mapper.map(user, UserRes.class)
+        );
     }
 
     @Override
     public List<UserRes> getAll() {
-        return null;
+        return repository.findAll().stream().map(
+                user -> mapper.map(user, UserRes.class)
+        ).toList();
     }
 
     @Override
     public UserRes create(UserReq request) {
         User existingUserEmail = repository.findByEmail(request.getEmail());
-        Role user_role = roleRepository.findByName(RoleType.ROLE_USER.name());
-
 
         if (Objects.nonNull(existingUserEmail)) {
             throw new EntityAlreadyExistsException("User already exists with the given Email.");
         }
-        else if (Objects.isNull(user_role)) {
-            throw new NotFoundException("User Role not found");
-        }
 
         User user = mapper.map(request, User.class);
-        user.setRole(user_role);
+        user.setPassword(encoder.encode(request.getPassword()));
+        user.setRole(Role.USER);
         user.setCreatedAt(LocalDateTime.now());
         User savedUser = repository.save(user);
 
@@ -91,7 +102,7 @@ public class UserServiceImpl implements UserService {
         String url = "users/auth/account-verification/";
         String subject = "DocGuardian : Email Verification ";
         String body = verificationEmailMessage(name, url, this.host,accountVerification.getToken());
-        emailService.sendSimpleMailMessage(name, sendingTo, subject, body);
+        emailService.sendSimpleMailMessage(name, this.sendingBy ,sendingTo, subject, body);
 
         return mapper.map(savedUser, UserRes.class);
     }
@@ -149,7 +160,7 @@ public class UserServiceImpl implements UserService {
         String url = "users/auth/account/verification/";
         String subject = "DocGuardian : Email Verification ";
         String body = verificationEmailMessage(name, url, this.host,new_confirmation.getToken());
-        emailService.sendSimpleMailMessage(name, sendingTo, subject, body);
+        emailService.sendSimpleMailMessage(name,this.sendingBy, sendingTo, subject, body);
 
         return true;
     }
@@ -171,7 +182,7 @@ public class UserServiceImpl implements UserService {
         String url = "users/auth/account/reset-password/";
         String subject = "DocGuardian : Reset Password ";
         String body = resetPasswordMessage(name, url, this.host,resetPassword.getToken());
-        emailService.sendSimpleMailMessage(name, sendingTo, subject, body);
+        emailService.sendSimpleMailMessage(name, this.sendingBy, sendingTo, subject, body);
 
     }
 
@@ -235,7 +246,7 @@ public class UserServiceImpl implements UserService {
         if(Objects.isNull(user)){
             throw new NotFoundException("No User Found with this Email");
         }
-        else if (!Objects.equals(user.getPassword(), password)) {
+        else if (!encoder.matches(password, user.getPassword())) {
             throw new BadRequestException("Incorrect Password");
         }
 
@@ -256,6 +267,18 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean enableTwoFactorAuth(String email) {
         return false;
+    }
+
+    @Override
+    public List<InvitationDto> getInvitations(UUID id) {
+        User user = repository.findById(id)
+                .orElseThrow(() ->
+                        new EntityNotFoundException("User not found with the given credential.")
+                );
+
+        return invitationRepository.findAllByRecipient(user)
+                .stream().map(invitation -> mapper.map(invitation, InvitationDto.class))
+                .toList();
     }
 
     private String verificationEmailMessage(String name, String url, String host, String token) {
