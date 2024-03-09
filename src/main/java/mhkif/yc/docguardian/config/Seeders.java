@@ -2,8 +2,8 @@ package mhkif.yc.docguardian.config;
 
 import lombok.RequiredArgsConstructor;
 import mhkif.yc.docguardian.entities.User;
-import static mhkif.yc.docguardian.enums.Role.ROLE_ADMIN;
-import static mhkif.yc.docguardian.enums.Role.ROLE_USER;
+import static mhkif.yc.docguardian.enums.Role.ADMIN;
+import static mhkif.yc.docguardian.enums.Role.USER;
 import mhkif.yc.docguardian.repositories.RoomRepository;
 import mhkif.yc.docguardian.repositories.RoomUsersRepository;
 import mhkif.yc.docguardian.repositories.UserRepository;
@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 
@@ -22,6 +23,7 @@ public class Seeders implements CommandLineRunner {
     private final UserRepository userRepository;
     private final RoomRepository roomRepository;
     private final RoomUsersRepository roomUsersRepository;
+    private final PasswordEncoder encoder;
 
     @Override
     public void run(String... args) throws Exception {
@@ -36,9 +38,9 @@ public class Seeders implements CommandLineRunner {
         user.setFirst_name("Aziz");
         user.setLast_name("harkati");
         user.setEmail("aziz@gmail.com");
-        user.setPassword("aqwzsxedc");
+        user.setPassword(encoder.encode("aqwzsxedc"));
         user.setPhone("0661311145");
-        user.setRole(ROLE_USER);
+        user.setRole(USER);
         user.setCreatedAt(LocalDateTime.now());
 
         repository.save(user);
@@ -50,9 +52,9 @@ public class Seeders implements CommandLineRunner {
         user.setFirst_name("Abdelmalek");
         user.setLast_name("Achkif");
         user.setEmail("malikhkif@gmail.com");
-        user.setPassword("aqwzsxedc");
+        user.setPassword(encoder.encode("aqwzsxedc"));
         user.setPhone("0771311145");
-        user.setRole(ROLE_ADMIN);
+        user.setRole(ADMIN);
         user.setCreatedAt(LocalDateTime.now());
 
         repository.save(user);

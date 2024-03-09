@@ -7,7 +7,6 @@ import mhkif.yc.docguardian.dtos.InvitationDto;
 import mhkif.yc.docguardian.dtos.requests.UserReq;
 import mhkif.yc.docguardian.dtos.responses.UserRes;
 import mhkif.yc.docguardian.entities.AccountVerification;
-import mhkif.yc.docguardian.entities.Invitation;
 import mhkif.yc.docguardian.entities.ResetPasswordVerification;
 import mhkif.yc.docguardian.entities.User;
 import mhkif.yc.docguardian.enums.Role;
@@ -24,6 +23,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -45,7 +45,8 @@ public class UserServiceImpl implements UserService {
     private final ResetPasswordVerificationRepository resetPasswordRepo;
     private final EmailService emailService;
     private final InvitationRepository invitationRepository;
-    private  final ModelMapper mapper;
+    private final PasswordEncoder encoder;
+    private final ModelMapper mapper;
 
     @Value("${spring.mail.properties.verify.host}")
     private String host;
@@ -86,7 +87,8 @@ public class UserServiceImpl implements UserService {
         }
 
         User user = mapper.map(request, User.class);
-        user.setRole(Role.ROLE_USER);
+        user.setPassword(encoder.encode(request.getPassword()));
+        user.setRole(Role.USER);
         user.setCreatedAt(LocalDateTime.now());
         User savedUser = repository.save(user);
 
@@ -244,7 +246,7 @@ public class UserServiceImpl implements UserService {
         if(Objects.isNull(user)){
             throw new NotFoundException("No User Found with this Email");
         }
-        else if (!Objects.equals(user.getPassword(), password)) {
+        else if (!encoder.matches(password, user.getPassword())) {
             throw new BadRequestException("Incorrect Password");
         }
 

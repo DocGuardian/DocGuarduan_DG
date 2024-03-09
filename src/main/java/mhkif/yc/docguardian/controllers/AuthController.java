@@ -2,6 +2,8 @@ package mhkif.yc.docguardian.controllers;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import mhkif.yc.docguardian.config.security.authenticators.AuthenticatedUser;
+import mhkif.yc.docguardian.config.security.jwt.JwtService;
 import mhkif.yc.docguardian.dtos.HttpResponse;
 import mhkif.yc.docguardian.dtos.requests.EmailPasswordReq;
 import mhkif.yc.docguardian.dtos.requests.EmailReq;
@@ -25,11 +27,13 @@ import java.util.Map;
 public class AuthController {
 
     private final UserService service;
+    private final JwtService jwtService;
     private final ModelMapper mapper;
 
     @PostMapping("login")
     public ResponseEntity<HttpResponse> login(@Valid @RequestBody EmailPasswordReq request){
         User user = service.auth(request.getEmail(), request.getPassword());
+        AuthenticatedUser authenticatedEntity = new AuthenticatedUser(user);
 
         return ResponseEntity.accepted().body(
                 HttpResponse.builder()
@@ -39,7 +43,10 @@ public class AuthController {
                         .status(HttpStatus.ACCEPTED)
                         .message(user.getRole()+" has been authenticated")
                         .developerMessage(user.getRole()+" has been authenticated")
-                        .data(Map.of("response", mapper.map(user, UserRes.class)))
+                        .data(Map.of(
+                                "response", mapper.map(user, UserRes.class),
+                                "token", jwtService.generateToken(authenticatedEntity)
+                        ))
                         .build()
         );
     }

@@ -15,9 +15,9 @@ public class RoomUsersActivities {
     //private Room room
     //private user user;
     //private RoomActivity activity;
-    private String device;
-    private String ip_address;
-    @Column(nullable = false)
-    private LocalDateTime createdAt;
+    //private String device;
+    //private String ip_address;
+    //@Column(nullable = false)
+   // private LocalDateTime createdAt;
 
 }

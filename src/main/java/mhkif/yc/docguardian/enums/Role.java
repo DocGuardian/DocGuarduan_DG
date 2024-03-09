@@ -2,14 +2,16 @@ package mhkif.yc.docguardian.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public enum Role {
-    ROLE_SYSADMIN(Collections.emptySet()),
-    ROLE_ADMIN(Set.of(
+    SYSADMIN(Set.of(
             Permission.ADMIN_READ,
             Permission.ADMIN_CREATE,
             Permission.ADMIN_UPDATE,
@@ -20,8 +22,19 @@ public enum Role {
             Permission.USER_DELETE
 
     )),
-    ROLE_MANAGER(Collections.emptySet()),
-    ROLE_USER(Set.of(
+    ADMIN(Set.of(
+            Permission.ADMIN_READ,
+            Permission.ADMIN_CREATE,
+            Permission.ADMIN_UPDATE,
+            Permission.ADMIN_DELETE,
+            Permission.USER_READ,
+            Permission.USER_CREATE,
+            Permission.USER_UPDATE,
+            Permission.USER_DELETE
+
+    )),
+    MANAGER(Collections.emptySet()),
+    USER(Set.of(
             Permission.USER_READ,
             Permission.USER_CREATE,
             Permission.USER_UPDATE,
@@ -29,4 +42,12 @@ public enum Role {
     ));
     @Getter
     private final Set<Permission> permissions;
+    public List<SimpleGrantedAuthority> getAuthorities(){
+       var authorities = getPermissions().stream()
+                .map(
+                        permission -> new SimpleGrantedAuthority(permission.getPermission())
+                ).collect(Collectors.toList());
+       authorities.add(new SimpleGrantedAuthority("ROLE_"+this.name()));
+       return authorities;
+    };
 }
