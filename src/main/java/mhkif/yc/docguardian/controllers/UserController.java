@@ -4,9 +4,12 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mhkif.yc.docguardian.dtos.HttpResponse;
 import mhkif.yc.docguardian.dtos.InvitationDto;
+import mhkif.yc.docguardian.dtos.NotificationDto;
 import mhkif.yc.docguardian.dtos.requests.UserReq;
 import mhkif.yc.docguardian.dtos.responses.UserRes;
+import mhkif.yc.docguardian.entities.User;
 import mhkif.yc.docguardian.services.InvitationService;
+import mhkif.yc.docguardian.services.NotificationService;
 import mhkif.yc.docguardian.services.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -26,6 +29,7 @@ public class UserController {
 
     private final UserService service;
     private final InvitationService invitationService;
+    private final NotificationService notificationService;
 
 
     @PostMapping("")
@@ -58,8 +62,23 @@ public class UserController {
     public ResponseEntity<UserRes> get(@PathVariable UUID id){
         return ResponseEntity.ok(service.getById(id));
     }
+    @GetMapping("search-by")
+    public ResponseEntity<HttpResponse> getByEmail(@RequestParam() String email){
+        UserRes user= service.getByEmail(email);
+        return ResponseEntity.ok().body(
+                HttpResponse.builder()
+                        .timeStamp(LocalDateTime.now().toString())
+                        .statusCode(HttpStatus.OK.value())
+                        .path("doc_guardian/api/v1/email")
+                        .status(HttpStatus.OK)
+                        .message("User By Email has been retrieved successfully")
+                        .developerMessage("User By Email has been retrieved successfully")
+                        .data(Map.of("response", user))
+                        .build()
+        );
+    }
 
-    @GetMapping("users/{id}/invitations")
+    @GetMapping("{id}/invitations")
     public ResponseEntity<HttpResponse> getInvitations(@PathVariable UUID id){
         List<InvitationDto> invitations = service.getInvitations(id);
         return ResponseEntity.accepted().body(
@@ -87,6 +106,22 @@ public class UserController {
                         .message("User's invitation has been updated successfully")
                         .developerMessage("User's invitations has been updated successfully")
                         .data(Map.of("response", invitations))
+                        .build()
+        );
+    }
+
+    @GetMapping("{id}/notifications")
+    public ResponseEntity<HttpResponse> getNotifications(@PathVariable UUID id){
+        List<NotificationDto> notifications = notificationService.getNotificationsForUser(id);
+        return ResponseEntity.accepted().body(
+                HttpResponse.builder()
+                        .timeStamp(LocalDateTime.now().toString())
+                        .statusCode(HttpStatus.CREATED.value())
+                        .path("doc_guardian/api/v1/users/{id}/notifications")
+                        .status(HttpStatus.CREATED)
+                        .message("User's notifications has been retrieved successfully")
+                        .developerMessage("User's notifications has been retrieved successfully")
+                        .data(Map.of("response", notifications))
                         .build()
         );
     }

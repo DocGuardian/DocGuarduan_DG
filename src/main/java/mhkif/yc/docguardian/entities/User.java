@@ -42,4 +42,7 @@ public class User {
     @OneToMany(mappedBy = "recipient")
     private List<Invitation> receivedInvitations;
 
+    @OneToMany(mappedBy = "recipient")
+    private List<Notification> notifications;
+
 }

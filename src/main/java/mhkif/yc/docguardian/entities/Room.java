@@ -39,7 +39,7 @@ public class Room {
     private List<User> users = new ArrayList<>();
 
     @OneToMany(mappedBy = "room")
-    private List<Folder> folders = new ArrayList<>();
+    private List<Document> documents = new ArrayList<>();
 
     @OneToMany(mappedBy = "room")
     private List<Invitation> invitations;
