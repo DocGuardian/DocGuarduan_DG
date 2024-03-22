@@ -1,9 +1,8 @@
 package mhkif.yc.docguardian.dtos.responses;
 
-import jakarta.persistence.*;
 import lombok.Data;
-import mhkif.yc.docguardian.entities.Folder;
-import mhkif.yc.docguardian.entities.User;
+import mhkif.yc.docguardian.entities.Document;
+import mhkif.yc.docguardian.entities.Notification;
 import mhkif.yc.docguardian.enums.RoomType;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -22,5 +21,6 @@ public class RoomRes {
     private LocalDateTime updatedAt;
     private RoomType type;
     private List<UserRes> users = new ArrayList<>();
-    private List<Folder> folders;
+    private List<Document> documents = new ArrayList<>();
+
 }

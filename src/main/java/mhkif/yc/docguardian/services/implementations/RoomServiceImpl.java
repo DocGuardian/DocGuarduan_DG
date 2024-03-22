@@ -4,15 +4,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mhkif.yc.docguardian.dtos.requests.RoomReq;
 import mhkif.yc.docguardian.dtos.responses.RoomRes;
-import mhkif.yc.docguardian.dtos.responses.UserRes;
 import mhkif.yc.docguardian.entities.*;
 import mhkif.yc.docguardian.enums.InvitationStatus;
-import mhkif.yc.docguardian.enums.RoomPermission;
 import mhkif.yc.docguardian.enums.RoomRoles;
+import mhkif.yc.docguardian.exceptions.BadRequestException;
 import mhkif.yc.docguardian.exceptions.NotFoundException;
 import mhkif.yc.docguardian.repositories.*;
 import mhkif.yc.docguardian.services.EmailService;
-import mhkif.yc.docguardian.services.InvitationService;
+import mhkif.yc.docguardian.services.NotificationService;
 import mhkif.yc.docguardian.services.RoomService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,6 +24,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static mhkif.yc.docguardian.enums.InvitationStatus.ACCEPTED;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -34,6 +35,8 @@ public class RoomServiceImpl implements RoomService {
     private final UserRepository userRepository;
     private final RoomUsersRepository roomUsersRepository;
     private final InvitationRepository invitationRepository;
+
+    private final NotificationService notificationService;
     private final EmailService emailService;
     private  final ModelMapper mapper;
 
@@ -56,6 +59,16 @@ public class RoomServiceImpl implements RoomService {
                 room -> mapper.map(room, RoomRes.class)
         );
     }
+
+    @Override
+    public Page<RoomRes> getPagesByUser(int page, int size, UUID userId) {
+        User owner = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Owner not found"));
+        PageRequest pageRequest = PageRequest.of(page, size);
+        return repository.findAllByUsersIsContaining(pageRequest, owner).map(
+                room -> mapper.map(room, RoomRes.class)
+        );
+    }
+
 
     @Override
     public List<RoomRes> getAll() {
@@ -86,13 +99,7 @@ public class RoomServiceImpl implements RoomService {
         roomUsers.setCreatedAt(LocalDateTime.now());
 
         roomUsersRepository.save(roomUsers);
-        /*
-        RoomRes mappedRoom = mapper.map(savedRoom, RoomRes.class);
-        mappedRoom.setUsersRes(savedRoom.getUsers().stream().map(
-                user -> mapper.map(user, UserRes.class)
-        ).toList());
 
-         */
         return mapper.map(savedRoom, RoomRes.class);
     }
 
@@ -101,6 +108,27 @@ public class RoomServiceImpl implements RoomService {
         return null;
     }
 
+    @Override
+    public RoomRes joinUser(UUID id, UUID userId){
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+        Room room = repository.findById(id).orElseThrow(() -> new NotFoundException("Room not found"));
+        boolean isPresent = room.getUsers().stream().anyMatch(user1 -> user1 == user); // Add user only if not already present
+        if(isPresent){
+           throw new BadRequestException("This User is Already a member");
+        }
+
+
+        List<User> users = room.getUsers();
+        users.add(user);
+        room.setUsers(users);
+        room = repository.save(room);
+        Invitation invitation = user.getReceivedInvitations().stream()
+                .filter(inv -> inv.getRoom().getId().equals(id)).findFirst().orElseThrow(
+                        () ->   new NotFoundException("Invitation not found")
+                );
+        invitation.setStatus(ACCEPTED);
+        invitationRepository.save(invitation);
+        return mapper.map(room, RoomRes.class);    }
     @Override
     public RoomRes inviteUserViaEmail(UUID id, UUID userId, String recipientEmail) {
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
@@ -131,8 +159,11 @@ public class RoomServiceImpl implements RoomService {
         invitation.setStatus(InvitationStatus.WAITING);
         invitation.setCreatedAt(LocalDateTime.now());
         invitationRepository.save(invitation);
+        String message = "You've been invited to join " +room.getName()+ " by " + user.getFirst_name();
+        notificationService.sendInvitation(recipientId, userId, id, message);
         return mapper.map(room, RoomRes.class);
     }
+
 
     private String invitationEmailMessage(String name, String url, String host) {
         return "Hello , \n\n" +

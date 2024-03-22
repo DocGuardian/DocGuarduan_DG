@@ -221,12 +221,17 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public UserRes getByEmail(Integer id) {
-        return null;
+    public UserRes getByEmail(String email) {
+        User user = repository.findByEmail(email);
+        if(Objects.isNull(user)){
+            throw new NotFoundException("User Not Exist with the given Email : " + email);
+        }
+        return mapper.map(user, UserRes.class);
+
     }
 
     @Override
-    public UserRes getByPhone(Integer id) {
+    public UserRes getByPhone(String phone) {
         return null;
     }
 
@@ -271,6 +276,17 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<InvitationDto> getInvitations(UUID id) {
+        User user = repository.findById(id)
+                .orElseThrow(() ->
+                        new EntityNotFoundException("User not found with the given credential.")
+                );
+
+        return invitationRepository.findAllByRecipient(user)
+                .stream().map(invitation -> mapper.map(invitation, InvitationDto.class))
+                .toList();
+    }
+
+    public List<InvitationDto> getNotifications(UUID id) {
         User user = repository.findById(id)
                 .orElseThrow(() ->
                         new EntityNotFoundException("User not found with the given credential.")

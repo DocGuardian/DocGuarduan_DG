@@ -36,6 +36,8 @@ public class InvitationServiceImpl implements InvitationService {
         );
     }
 
+
+
     @Override
     public Page<InvitationDto> getAllPages(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
@@ -54,14 +56,24 @@ public class InvitationServiceImpl implements InvitationService {
     @Override
     public InvitationDto create(InvitationDto request) {
         User sender = userRepository.findById(request.getSender().getId()).orElseThrow(() -> new NotFoundException("Sender not found"));
-        User recipient = userRepository.findById(request.getSender().getId()).orElseThrow(() -> new NotFoundException("Recipient not found"));
+        User recipient = userRepository.findById(request.getRecipient().getId()).orElseThrow(() -> new NotFoundException("Recipient not found"));
         Room room = roomRepository.findById(request.getRoom().getId()).orElseThrow(() -> new NotFoundException("Room not found"));
         Invitation invitation =   repository.save(mapper.map(request, Invitation.class));
         return mapper.map(invitation, InvitationDto.class);
     }
 
     @Override
-    public InvitationDto update(InvitationDto room) {
-        return null;
+    public InvitationDto update(InvitationDto invitationDto) {
+        repository.findById(invitationDto.getId()).orElseThrow(() -> new NotFoundException("Invitation not found"));
+        Invitation invitation = repository.save(mapper.map(invitationDto, Invitation.class));
+        return mapper.map(invitation, InvitationDto.class);
+    }
+
+    @Override
+    public boolean delete(UUID id) {
+        Invitation invitation = repository.findById(id).orElseThrow(() -> new NotFoundException("Invitation not found"));
+        repository.delete(invitation);
+
+        return repository.existsById(id);
     }
 }

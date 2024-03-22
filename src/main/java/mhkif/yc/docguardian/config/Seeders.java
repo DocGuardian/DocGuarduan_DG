@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 
 @Configuration
@@ -43,7 +44,26 @@ public class Seeders implements CommandLineRunner {
         user.setRole(USER);
         user.setCreatedAt(LocalDateTime.now());
 
-        repository.save(user);
+        User user2 = new User();
+        user2.setFirst_name("Mohammed");
+        user2.setLast_name("Achkif");
+        user2.setEmail("medachkif@gmail.com");
+        user2.setPassword(encoder.encode("aqwzsxedc"));
+        user2.setPhone("0781311145");
+        user2.setRole(USER);
+        user2.setCreatedAt(LocalDateTime.now());
+
+        User user3 = new User();
+        user3.setFirst_name("Ahmed");
+        user3.setLast_name("RokenEddine");
+        user3.setEmail("ahmed@gmail.com");
+        user3.setPassword(encoder.encode("aqwzsxedc"));
+        user3.setPhone("0791311145");
+        user3.setRole(USER);
+        user3.setCreatedAt(LocalDateTime.now());
+
+        List<User> users = List.of(user, user2, user3);
+        repository.saveAll(users);
     }
 
     private void createAdmin(UserRepository repository){

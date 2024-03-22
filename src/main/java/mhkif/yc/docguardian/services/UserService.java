@@ -19,8 +19,8 @@ public interface UserService extends Service<User, UUID, UserReq, UserRes> {
 
     void resetPassword(String token,  String new_password);
 
-    UserRes getByEmail(Integer id);
-    UserRes getByPhone(Integer id);
+    UserRes getByEmail(String id);
+    UserRes getByPhone(String id);
     UserRes update(User user);
     boolean delete(Integer id);
     User auth(String email, String password);

@@ -17,7 +17,7 @@ public class Document {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
     @ManyToOne
-    private Folder folder;
+    private Room room;
     private String name;
     private double size;
     @Enumerated(EnumType.STRING)

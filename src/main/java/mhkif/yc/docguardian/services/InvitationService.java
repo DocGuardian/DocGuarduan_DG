@@ -6,7 +6,9 @@ import mhkif.yc.docguardian.entities.Invitation;
 
 import java.util.UUID;
 
+
 public interface InvitationService extends Service<Invitation, UUID, InvitationDto, InvitationDto>{
-    InvitationDto update(InvitationDto room);
+    InvitationDto update(InvitationDto invite);
+    boolean delete(UUID id);
 
 }
