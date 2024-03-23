@@ -6,7 +6,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Entity
+//@Entity
 @Table(name = "user_activities")
 @Data
 public class UserActivities {

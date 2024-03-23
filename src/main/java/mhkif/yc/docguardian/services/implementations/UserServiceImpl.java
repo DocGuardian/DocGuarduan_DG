@@ -241,7 +241,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean delete(Integer id) {
+    public boolean delete(UUID id) {
         return false;
     }
 

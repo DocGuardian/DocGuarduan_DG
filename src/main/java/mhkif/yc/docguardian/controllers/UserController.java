@@ -6,10 +6,12 @@ import mhkif.yc.docguardian.dtos.HttpResponse;
 import mhkif.yc.docguardian.dtos.InvitationDto;
 import mhkif.yc.docguardian.dtos.NotificationDto;
 import mhkif.yc.docguardian.dtos.requests.UserReq;
+import mhkif.yc.docguardian.dtos.responses.RoomRes;
 import mhkif.yc.docguardian.dtos.responses.UserRes;
 import mhkif.yc.docguardian.entities.User;
 import mhkif.yc.docguardian.services.InvitationService;
 import mhkif.yc.docguardian.services.NotificationService;
+import mhkif.yc.docguardian.services.RoomService;
 import mhkif.yc.docguardian.services.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -30,6 +32,7 @@ public class UserController {
     private final UserService service;
     private final InvitationService invitationService;
     private final NotificationService notificationService;
+    private final RoomService roomService;
 
 
     @PostMapping("")
@@ -74,6 +77,22 @@ public class UserController {
                         .message("User By Email has been retrieved successfully")
                         .developerMessage("User By Email has been retrieved successfully")
                         .data(Map.of("response", user))
+                        .build()
+        );
+    }
+
+    @GetMapping("{id}/rooms")
+    public ResponseEntity<HttpResponse> getRoomsPagination(@RequestParam(required = false, defaultValue = "0") int page, @RequestParam(required = false,defaultValue = "5") int size, @PathVariable UUID id){
+        Page<RoomRes> roomPages = roomService.getPagesByUser(page, size, id);
+        return ResponseEntity.ok().body(
+                HttpResponse.builder()
+                        .timeStamp(LocalDateTime.now().toString())
+                        .statusCode(HttpStatus.OK.value())
+                        .path("doc_guardian/api/v1/rooms/pages")
+                        .status(HttpStatus.OK)
+                        .message("User's Room Pages has been retrieved successfully")
+                        .developerMessage("User's Room  Pages has been retrieved  successfully")
+                        .data(Map.of("response", roomPages))
                         .build()
         );
     }

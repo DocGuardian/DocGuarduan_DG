@@ -20,7 +20,6 @@ import java.util.UUID;
 @RequestMapping("doc_guardian/api/v1/notifications")
 @RequiredArgsConstructor
 public class NotificationController {
-    private final InvitationService invitationService;
     private final NotificationService service;
 
     @PostMapping("/invitations")

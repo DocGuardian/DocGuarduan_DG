@@ -17,8 +17,11 @@ public class Document {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
     @ManyToOne
+    private User sender;
+    @ManyToOne
     private Room room;
     private String name;
+    private String docUrl;
     private double size;
     @Enumerated(EnumType.STRING)
     private DocType type;

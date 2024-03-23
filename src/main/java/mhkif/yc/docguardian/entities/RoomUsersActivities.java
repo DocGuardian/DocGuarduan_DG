@@ -6,7 +6,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Entity
+//@Entity
 @Data
 public class RoomUsersActivities {
     @Id

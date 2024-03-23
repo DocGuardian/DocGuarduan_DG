@@ -6,7 +6,7 @@ import mhkif.yc.docguardian.enums.ActivityType;
 
 import java.util.UUID;
 
-@Entity
+//@Entity
 @Table(name = "activities")
 @Data
 public class Activity {

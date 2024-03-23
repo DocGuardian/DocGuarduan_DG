@@ -22,7 +22,7 @@ public interface UserService extends Service<User, UUID, UserReq, UserRes> {
     UserRes getByEmail(String id);
     UserRes getByPhone(String id);
     UserRes update(User user);
-    boolean delete(Integer id);
+    boolean delete(UUID id);
     User auth(String email, String password);
     boolean enableAccount(String email);
     boolean lockAccount(String email);

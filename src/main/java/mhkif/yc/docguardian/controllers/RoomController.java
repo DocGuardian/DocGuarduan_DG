@@ -27,7 +27,6 @@ import java.util.UUID;
 public class RoomController {
 
     private final RoomService service;
-    private final ModelMapper mapper;
 
     @PostMapping("")
     public ResponseEntity<HttpResponse> save(@Valid @RequestBody RoomReq request){
@@ -47,6 +46,22 @@ public class RoomController {
 
     @PostMapping("/join-user")
     public ResponseEntity<HttpResponse> joinUser(@Valid @RequestBody JoinUserRequest req){
+        RoomRes room = service.joinUser(req.getRoomId(), req.getUserId());
+        return ResponseEntity.accepted().body(
+                HttpResponse.builder()
+                        .timeStamp(LocalDateTime.now().toString())
+                        .statusCode(HttpStatus.OK.value())
+                        .path("doc_guardian/api/v1/rooms/joinUser")
+                        .status(HttpStatus.OK)
+                        .message("user has been joined to the room successfully")
+                        .developerMessage("user has been joined to the room successfully")
+                        .data(Map.of("response", room))
+                        .build()
+        );
+    }
+
+    @PostMapping("{id}/upload")
+    public ResponseEntity<HttpResponse> upload(@Valid @RequestBody JoinUserRequest req, @PathVariable UUID id){
         RoomRes room = service.joinUser(req.getRoomId(), req.getUserId());
         return ResponseEntity.accepted().body(
                 HttpResponse.builder()
@@ -98,21 +113,6 @@ public class RoomController {
         );
     }
 
-    @GetMapping("/users/{userId}/pages")
-    public ResponseEntity<HttpResponse> getPaginationByUser(@RequestParam(required = false, defaultValue = "0") int page, @RequestParam(required = false,defaultValue = "5") int size, @PathVariable UUID userId){
-        Page<RoomRes> roomPages = service.getPagesByUser(page, size, userId);
-        return ResponseEntity.ok().body(
-                HttpResponse.builder()
-                        .timeStamp(LocalDateTime.now().toString())
-                        .statusCode(HttpStatus.OK.value())
-                        .path("doc_guardian/api/v1/rooms/pages")
-                        .status(HttpStatus.OK)
-                        .message("Room Pages has been retrieved successfully")
-                        .developerMessage("Room  Pages has been retrieved  successfully")
-                        .data(Map.of("response", roomPages))
-                        .build()
-        );
-    }
 
     @GetMapping("/pages")
     public ResponseEntity<HttpResponse> getPagination(@RequestParam(required = false, defaultValue = "0") int page, @RequestParam(required = false,defaultValue = "5") int size){
