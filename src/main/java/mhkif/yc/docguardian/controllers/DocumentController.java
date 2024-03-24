@@ -8,6 +8,7 @@ import mhkif.yc.docguardian.dtos.responses.DocumentRes;
 import mhkif.yc.docguardian.services.DocumentService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,7 +25,7 @@ public class DocumentController {
     private final DocumentService service;
 
 
-    @PostMapping("")
+    @PostMapping(value = "", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<HttpResponse> save(@Valid @ModelAttribute DocumentReq request){
         DocumentRes doc = service.create(request);
         return ResponseEntity.accepted().body(
@@ -89,6 +90,7 @@ public class DocumentController {
         );
 
     }
+
 
     @DeleteMapping("{id}")
    public ResponseEntity<HttpResponse> deleteUser(@PathVariable UUID id) {

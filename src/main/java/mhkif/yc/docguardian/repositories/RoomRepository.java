@@ -11,4 +11,5 @@ import java.util.UUID;
 
 public interface RoomRepository extends JpaRepository<Room, UUID> {
     Page<Room> findAllByUsersIsContaining(PageRequest pageRequest, User owner);
+
 }

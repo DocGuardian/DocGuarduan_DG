@@ -3,11 +3,13 @@ package mhkif.yc.docguardian.services.implementations;
 import lombok.RequiredArgsConstructor;
 import mhkif.yc.docguardian.dtos.requests.DocumentReq;
 import mhkif.yc.docguardian.dtos.responses.DocumentRes;
+import mhkif.yc.docguardian.dtos.responses.RoomRes;
 import mhkif.yc.docguardian.entities.Document;
 import mhkif.yc.docguardian.entities.Room;
 import mhkif.yc.docguardian.entities.User;
 import mhkif.yc.docguardian.exceptions.NotFoundException;
 import mhkif.yc.docguardian.repositories.DocumentRepository;
+import mhkif.yc.docguardian.repositories.RoomRepository;
 import mhkif.yc.docguardian.repositories.UserRepository;
 import mhkif.yc.docguardian.services.DocumentService;
 import org.modelmapper.ModelMapper;
@@ -25,6 +27,8 @@ public class DocumentServiceImpl implements DocumentService {
 
     private final DocumentRepository repository;
     private final UserRepository userRepository;
+    private final RoomRepository roomRepository;
+    private final CloudinaryService cloudinaryService;
     private final ModelMapper mapper;
 
     @Override
@@ -61,10 +65,34 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
-    public DocumentRes create(DocumentReq request) {
-        User owner = userRepository.findById(request.getSender().getId()).orElseThrow(() -> new NotFoundException("User sender not found"));
-        Document document = repository.save(mapper.map(request, Document.class));
+    public Page<DocumentRes> getDocsForUserRooms(int page, int size, UUID userId) {
+        userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+        PageRequest pageRequest = PageRequest.of(page, size);
+        return repository.findDocumentsForUserRooms(pageRequest, userId).map(
+                doc -> mapper.map(doc, DocumentRes.class)
+        );
 
+    }
+
+    @Override
+    public List<DocumentRes> getAllByRoom(UUID id) {
+        Room room = roomRepository.findById(id).orElseThrow(() -> new NotFoundException("Room not found"));
+        return repository.findAllByRoom(room).stream().map(
+                doc -> mapper.map(doc, DocumentRes.class)
+        ).toList();
+
+    }
+
+    @Override
+    public DocumentRes create(DocumentReq request) {
+        userRepository.findById(request.getSender().getId()).orElseThrow(() -> new NotFoundException("User sender not found"));
+        Room room = roomRepository.findById(request.getRoom().getId()).orElseThrow(() -> new NotFoundException("Room not found"));
+
+        Document document = mapper.map(request, Document.class);
+        document.setDocUrl(cloudinaryService.uploadFile(request.getDocUrl(), "room_docs"));
+        repository.save(document);
+        room.setStorage(room.getStorage() + document.getSize());
+        roomRepository.save(room);
         return mapper.map(document, DocumentRes.class);
     }
 
@@ -72,4 +100,6 @@ public class DocumentServiceImpl implements DocumentService {
     public boolean delete(UUID id) {
         return false;
     }
+
+
 }

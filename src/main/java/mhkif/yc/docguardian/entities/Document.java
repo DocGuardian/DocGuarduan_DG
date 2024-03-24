@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import mhkif.yc.docguardian.enums.DocType;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -20,9 +21,14 @@ public class Document {
     private User sender;
     @ManyToOne
     private Room room;
+    @Column(nullable = false)
     private String name;
+    @Column(nullable = false)
     private String docUrl;
+    @Column(nullable = false)
     private double size;
-    @Enumerated(EnumType.STRING)
-    private DocType type;
+    //@Enumerated(EnumType.STRING)
+    private String type;
+    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime updatedAt;
 }

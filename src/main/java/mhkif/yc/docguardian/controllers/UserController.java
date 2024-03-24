@@ -6,13 +6,11 @@ import mhkif.yc.docguardian.dtos.HttpResponse;
 import mhkif.yc.docguardian.dtos.InvitationDto;
 import mhkif.yc.docguardian.dtos.NotificationDto;
 import mhkif.yc.docguardian.dtos.requests.UserReq;
+import mhkif.yc.docguardian.dtos.responses.DocumentRes;
 import mhkif.yc.docguardian.dtos.responses.RoomRes;
 import mhkif.yc.docguardian.dtos.responses.UserRes;
 import mhkif.yc.docguardian.entities.User;
-import mhkif.yc.docguardian.services.InvitationService;
-import mhkif.yc.docguardian.services.NotificationService;
-import mhkif.yc.docguardian.services.RoomService;
-import mhkif.yc.docguardian.services.UserService;
+import mhkif.yc.docguardian.services.*;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +31,7 @@ public class UserController {
     private final InvitationService invitationService;
     private final NotificationService notificationService;
     private final RoomService roomService;
+    private final DocumentService documentService;
 
 
     @PostMapping("")
@@ -97,6 +96,22 @@ public class UserController {
         );
     }
 
+
+    @GetMapping("{id}/rooms-docs")
+    public ResponseEntity<HttpResponse> getRoomsDocs(@RequestParam(required = false, defaultValue = "0") int page, @RequestParam(required = false,defaultValue = "5") int size, @PathVariable UUID id){
+        Page<DocumentRes> docPages = documentService.getDocsForUserRooms(page, size, id);
+        return ResponseEntity.ok().body(
+                HttpResponse.builder()
+                        .timeStamp(LocalDateTime.now().toString())
+                        .statusCode(HttpStatus.OK.value())
+                        .path("doc_guardian/api/v1/user/{{id}}/rooms-docs")
+                        .status(HttpStatus.OK)
+                        .message("User's Rooms Docs Pages has been retrieved successfully")
+                        .developerMessage("User's Room Docs Pages has been retrieved  successfully")
+                        .data(Map.of("response", docPages))
+                        .build()
+        );
+    }
     @GetMapping("{id}/invitations")
     public ResponseEntity<HttpResponse> getInvitations(@PathVariable UUID id){
         List<InvitationDto> invitations = service.getInvitations(id);

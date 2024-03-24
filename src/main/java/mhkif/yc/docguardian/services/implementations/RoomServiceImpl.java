@@ -8,6 +8,7 @@ import mhkif.yc.docguardian.entities.*;
 import mhkif.yc.docguardian.enums.InvitationStatus;
 import mhkif.yc.docguardian.enums.RoomRoles;
 import mhkif.yc.docguardian.exceptions.BadRequestException;
+import mhkif.yc.docguardian.exceptions.InternalServerException;
 import mhkif.yc.docguardian.exceptions.NotFoundException;
 import mhkif.yc.docguardian.repositories.*;
 import mhkif.yc.docguardian.services.EmailService;
@@ -35,10 +36,9 @@ public class RoomServiceImpl implements RoomService {
     private final UserRepository userRepository;
     private final RoomUsersRepository roomUsersRepository;
     private final InvitationRepository invitationRepository;
-
     private final NotificationService notificationService;
     private final EmailService emailService;
-    private  final ModelMapper mapper;
+    private final ModelMapper mapper;
 
     @Value("${spring.mail.properties.verify.host}")
     private String host;
@@ -69,6 +69,34 @@ public class RoomServiceImpl implements RoomService {
         );
     }
 
+    @Override
+    public boolean leaveUser(UUID id, UUID userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+        Room room = repository.findById(id).orElseThrow(() -> new NotFoundException("Room not found"));
+        RoomUsersId roomUsersId = new RoomUsersId();
+        roomUsersId.setRoom_id(room.getId());
+        roomUsersId.setUser_id(user.getId());
+
+        var userRoom = roomUsersRepository.findById(roomUsersId).orElseThrow(() -> new NotFoundException("User is not a member to this room"));
+        roomUsersRepository.delete(userRoom);
+        if(roomUsersRepository.existsById(userRoom.getId())){
+            throw new InternalServerException("Cannot Remove this record");
+        }
+        return !roomUsersRepository.existsById(userRoom.getId());
+    }
+
+    @Override
+    public UserRoom checkUserPermission(UUID id, UUID userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+        Room room = repository.findById(id).orElseThrow(() -> new NotFoundException("Room not found"));
+
+        RoomUsersId roomUsersId = new RoomUsersId();
+        roomUsersId.setRoom_id(room.getId());
+        roomUsersId.setUser_id(user.getId());
+
+        return roomUsersRepository.findById(roomUsersId).orElseThrow(() -> new NotFoundException("User is not a member to this room"));
+
+    }
 
     @Override
     public List<RoomRes> getAll() {
@@ -84,7 +112,6 @@ public class RoomServiceImpl implements RoomService {
         room.setOwner(owner);
         room.setStorage(0);
         room.setCreatedAt(LocalDateTime.now());
-        room.getUsers().add(owner);
 
         Room savedRoom = repository.save(room);
 
@@ -92,12 +119,11 @@ public class RoomServiceImpl implements RoomService {
         roomUsersId.setRoom_id(savedRoom.getId());
         roomUsersId.setUser_id(savedRoom.getOwner().getId());
 
-        RoomUsers roomUsers = new RoomUsers();
+        UserRoom roomUsers = new UserRoom();
         roomUsers.setId(roomUsersId);
         roomUsers.setPermission(RoomRoles.ADMIN);
         roomUsers.setExpiredAt(LocalDateTime.now().plusDays(10));
         roomUsers.setCreatedAt(LocalDateTime.now());
-
         roomUsersRepository.save(roomUsers);
 
         return mapper.map(savedRoom, RoomRes.class);
@@ -109,36 +135,46 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public RoomRes joinUser(UUID id, UUID userId){
+    public RoomRes joinUser(UUID notifId, UUID id, UUID userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
         Room room = repository.findById(id).orElseThrow(() -> new NotFoundException("Room not found"));
         boolean isPresent = room.getUsers().stream().anyMatch(user1 -> user1 == user); // Add user only if not already present
-        if(isPresent){
-           throw new BadRequestException("This User is Already a member");
+        if (isPresent) {
+            throw new BadRequestException("This User is Already a member");
         }
 
+        RoomUsersId roomUsersId = new RoomUsersId();
+        roomUsersId.setRoom_id(room.getId());
+        roomUsersId.setUser_id(user.getId());
 
-        List<User> users = room.getUsers();
-        users.add(user);
-        room.setUsers(users);
-        room = repository.save(room);
+        UserRoom roomUsers = new UserRoom();
+        roomUsers.setId(roomUsersId);
+        roomUsers.setPermission(RoomRoles.VIEWER);
+        roomUsers.setExpiredAt(LocalDateTime.now().plusDays(10));
+        roomUsers.setCreatedAt(LocalDateTime.now());
+        roomUsersRepository.save(roomUsers);
+
+
         Invitation invitation = user.getReceivedInvitations().stream()
                 .filter(inv -> inv.getRoom().getId().equals(id)).findFirst().orElseThrow(
-                        () ->   new NotFoundException("Invitation not found")
+                        () -> new NotFoundException("Invitation not found")
                 );
         invitation.setStatus(ACCEPTED);
         invitationRepository.save(invitation);
-        return mapper.map(room, RoomRes.class);    }
+        notificationService.markNotificationAsRead(notifId);
+        return mapper.map(room, RoomRes.class);
+    }
+
     @Override
     public RoomRes inviteUserViaEmail(UUID id, UUID userId, String recipientEmail) {
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
         Room room = repository.findById(id).orElseThrow(() -> new NotFoundException("Room not found"));
-        if(recipientEmail == null || recipientEmail.isEmpty()){
-           throw  new NotFoundException("Recipient email not found");
+        if (recipientEmail == null || recipientEmail.isEmpty()) {
+            throw new NotFoundException("Recipient email not found");
         }
 
-        String name = user.getFirst_name()+ " "+ user.getLast_name();
-        String url = "http://localhost:8080/doc_guardian/api/v1/rooms/"+id;
+        String name = user.getFirst_name() + " " + user.getLast_name();
+        String url = "http://localhost:8080/doc_guardian/api/v1/rooms/" + id;
         String subject = "DocGuardian : Room Invitation ";
         String body = invitationEmailMessage(name, url, this.host);
         emailService.sendSimpleMailMessage(name, user.getEmail(), recipientEmail, subject, body);
@@ -159,7 +195,7 @@ public class RoomServiceImpl implements RoomService {
         invitation.setStatus(InvitationStatus.WAITING);
         invitation.setCreatedAt(LocalDateTime.now());
         invitationRepository.save(invitation);
-        String message = "You've been invited to join " +room.getName()+ " by " + user.getFirst_name();
+        String message = "You've been invited to join " + room.getName() + " by " + user.getFirst_name();
         notificationService.sendInvitation(recipientId, userId, id, message);
         return mapper.map(room, RoomRes.class);
     }
@@ -167,9 +203,9 @@ public class RoomServiceImpl implements RoomService {
 
     private String invitationEmailMessage(String name, String url, String host) {
         return "Hello , \n\n" +
-                "You have been invited by "+name+"to a virtual room in DocGuardian ," +
+                "You have been invited by " + name + "to a virtual room in DocGuardian ," +
                 " Please click the link below to see the invitation  . \n\n" +
-                url +" \n\n" +
+                url + " \n\n" +
                 "The Support Team DocGuardian .";
     }
 }

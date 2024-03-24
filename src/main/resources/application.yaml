@@ -39,3 +39,10 @@ spring:
 server:
   error:
     include-message: always
+
+
+# ------------- Cloudinary --------------------
+cloudinary:
+  cloud_name: dr2ly0dd5
+  api_key: 581734546614221
+  api_secret: szgRJRgk7RYD4m8s46zFno8TCMM

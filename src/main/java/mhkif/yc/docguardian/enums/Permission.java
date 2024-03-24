@@ -17,12 +17,6 @@ public enum Permission {
     ADMIN_CREATE("admin:create"),
     ADMIN_DELETE("admin:delete"),
 
-    // MANAGER Permissions
-    MANAGER_READ("manager:read"),
-    MANAGER_UPDATE("manager:update"),
-    MANAGER_CREATE("manager:create"),
-    MANAGER_DELETE("manager:delete"),
-
     // USER Permissions
     USER_READ("user:read"),
     USER_UPDATE("user:update"),

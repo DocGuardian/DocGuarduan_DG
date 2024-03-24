@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import mhkif.yc.docguardian.entities.Room;
 import mhkif.yc.docguardian.entities.User;
-import mhkif.yc.docguardian.enums.DocType;
+
 import org.springframework.web.multipart.MultipartFile;
 
 @Data
@@ -25,15 +25,12 @@ public class DocumentReq {
     private String name;
 
     @NotNull(message = "doc url field is required")
-    @NotBlank(message = "doc url field is required")
     private MultipartFile docUrl;
 
     @NotNull(message = "doc size field is required")
-    @NotBlank(message = "doc size field is required")
     private double size;
 
 
     @NotNull(message = "doc type field is required")
-    @NotBlank(message = "doc type field is required")
-    private DocType type;
+    private String type;
 }

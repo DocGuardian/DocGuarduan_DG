@@ -7,8 +7,11 @@ import mhkif.yc.docguardian.dtos.RoomInviteByEmailDto;
 import mhkif.yc.docguardian.dtos.RoomInviteDto;
 import mhkif.yc.docguardian.dtos.requests.JoinUserRequest;
 import mhkif.yc.docguardian.dtos.requests.RoomReq;
+import mhkif.yc.docguardian.dtos.responses.DocumentRes;
 import mhkif.yc.docguardian.dtos.responses.RoomRes;
 import mhkif.yc.docguardian.entities.User;
+import mhkif.yc.docguardian.entities.UserRoom;
+import mhkif.yc.docguardian.services.DocumentService;
 import mhkif.yc.docguardian.services.RoomService;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -27,6 +30,7 @@ import java.util.UUID;
 public class RoomController {
 
     private final RoomService service;
+    private final DocumentService documentService;
 
     @PostMapping("")
     public ResponseEntity<HttpResponse> save(@Valid @RequestBody RoomReq request){
@@ -46,7 +50,7 @@ public class RoomController {
 
     @PostMapping("/join-user")
     public ResponseEntity<HttpResponse> joinUser(@Valid @RequestBody JoinUserRequest req){
-        RoomRes room = service.joinUser(req.getRoomId(), req.getUserId());
+        RoomRes room = service.joinUser(req.getNotifId(),req.getRoomId(), req.getUserId());
         return ResponseEntity.accepted().body(
                 HttpResponse.builder()
                         .timeStamp(LocalDateTime.now().toString())
@@ -60,18 +64,34 @@ public class RoomController {
         );
     }
 
-    @PostMapping("{id}/upload")
-    public ResponseEntity<HttpResponse> upload(@Valid @RequestBody JoinUserRequest req, @PathVariable UUID id){
-        RoomRes room = service.joinUser(req.getRoomId(), req.getUserId());
+    @PostMapping("{id}/leave/{userId}")
+    public ResponseEntity<HttpResponse> leaveUser(@PathVariable UUID id, @PathVariable UUID userId){
+        boolean isLeft = service.leaveUser(id, userId);
+        return ResponseEntity.accepted().body(
+                HttpResponse.builder()
+                        .timeStamp(LocalDateTime.now().toString())
+                        .statusCode(HttpStatus.OK.value())
+                        .path("doc_guardian/api/v1/rooms/leaveUser")
+                        .status(HttpStatus.OK)
+                        .message("user has been left  the room successfully")
+                        .developerMessage("user has been left the room successfully")
+                        .data(Map.of("response", isLeft))
+                        .build()
+        );
+    }
+
+    @PostMapping("{id}/user-permission/{userId}")
+    public ResponseEntity<HttpResponse> userPermission(@PathVariable UUID id, @PathVariable UUID userId){
+        UserRoom userRoom = service.checkUserPermission(id, userId);
         return ResponseEntity.accepted().body(
                 HttpResponse.builder()
                         .timeStamp(LocalDateTime.now().toString())
                         .statusCode(HttpStatus.OK.value())
                         .path("doc_guardian/api/v1/rooms/joinUser")
                         .status(HttpStatus.OK)
-                        .message("user has been joined to the room successfully")
-                        .developerMessage("user has been joined to the room successfully")
-                        .data(Map.of("response", room))
+                        .message("user Room has been joined to the room successfully")
+                        .developerMessage("user Room has been joined to the room successfully")
+                        .data(Map.of("response", userRoom))
                         .build()
         );
     }
@@ -147,6 +167,7 @@ public class RoomController {
                         .build()
         );
     }
+
     @GetMapping("")
     public ResponseEntity<HttpResponse> getAll(){
         List<RoomRes> roomResList = service.getAll();
@@ -163,6 +184,24 @@ public class RoomController {
         );
 
     }
+
+    @GetMapping("{id}/docs")
+    public ResponseEntity<HttpResponse> getRoomsDocs(@PathVariable UUID id){
+        List<DocumentRes> docs = documentService.getAllByRoom(id);
+        return ResponseEntity.ok().body(
+                HttpResponse.builder()
+                        .timeStamp(LocalDateTime.now().toString())
+                        .statusCode(HttpStatus.OK.value())
+                        .path("doc_guardian/api/v1/rooms/{id}/docs")
+                        .status(HttpStatus.OK)
+                        .message("Room Docs has been retrieved successfully")
+                        .developerMessage("Room Docs has been retrieved  successfully")
+                        .data(Map.of("response", docs))
+                        .build()
+        );
+
+    }
+
 
     @DeleteMapping("{id}")
     void deleteUser(@PathVariable UUID id) {

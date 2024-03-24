@@ -9,7 +9,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 public enum RoomRoles {
     ADMIN(Set.of()),
-    MANAGER(Set.of()),
+
     EDITOR(Collections.emptySet()),
     FILE_SHARER(Set.of()),
     VIEWER(Set.of());
