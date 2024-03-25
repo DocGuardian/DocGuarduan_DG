@@ -37,6 +37,7 @@ public class RoomServiceImpl implements RoomService {
     private final RoomUsersRepository roomUsersRepository;
     private final InvitationRepository invitationRepository;
     private final NotificationService notificationService;
+
     private final EmailService emailService;
     private final ModelMapper mapper;
 

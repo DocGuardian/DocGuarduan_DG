@@ -103,15 +103,15 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public boolean delete(UUID id) {
-        Notification notification = repository.findById(id).orElseThrow(() -> new NotFoundException("Notification not found"));
+        InvitationNotification notification = (InvitationNotification) repository.findById(id).orElseThrow(() -> new NotFoundException("Notification not found"));
         Invitation invitation = notification.getRecipient().getReceivedInvitations().stream()
-                .filter(inv -> inv.getRoom().getId().equals(id)).findFirst().orElseThrow(
+                .filter(inv -> inv.getRoom().getId().equals(notification.getRoom().getId())).findFirst().orElseThrow(
                         () ->   new NotFoundException("Invitation not found")
                 );
         invitation.setStatus(REFUSED);
         invitationRepository.save(invitation);
         repository.delete(notification);
 
-        return repository.existsById(id);
+        return !repository.existsById(id);
     }
 }
