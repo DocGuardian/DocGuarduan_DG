@@ -99,7 +99,7 @@ public class UserServiceImpl implements UserService {
 
         String name = savedUser.getFirst_name()+ " "+savedUser.getLast_name();
         String sendingTo = savedUser.getEmail();
-        String url = "users/auth/account-verification/";
+        String url = "auth/account-verification/";
         String subject = "DocGuardian : Email Verification ";
         String body = verificationEmailMessage(name, url, this.host,accountVerification.getToken());
         emailService.sendSimpleMailMessage(name, this.sendingBy ,sendingTo, subject, body);
@@ -157,7 +157,7 @@ public class UserServiceImpl implements UserService {
 
         String name = user.getFirst_name()+ " "+ user.getLast_name();
         String sendingTo = user.getEmail();
-        String url = "users/auth/account/verification/";
+        String url = "auth/account/verification/";
         String subject = "DocGuardian : Email Verification ";
         String body = verificationEmailMessage(name, url, this.host,new_confirmation.getToken());
         emailService.sendSimpleMailMessage(name,this.sendingBy, sendingTo, subject, body);

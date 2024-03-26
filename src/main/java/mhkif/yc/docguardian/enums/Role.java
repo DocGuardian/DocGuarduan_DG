@@ -33,7 +33,6 @@ public enum Role {
             Permission.USER_DELETE
 
     )),
-    MANAGER(Collections.emptySet()),
     USER(Set.of(
             Permission.USER_READ,
             Permission.USER_CREATE,

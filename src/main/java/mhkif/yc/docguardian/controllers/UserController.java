@@ -55,9 +55,20 @@ public class UserController {
         return ResponseEntity.ok(new UserRes());
     }
     @GetMapping("/pages")
-    public ResponseEntity<Page<UserRes>> getPagination(@RequestParam(required = false, defaultValue = "0") int page, @RequestParam(required = false,defaultValue = "5") int size){
+    public ResponseEntity<HttpResponse> getPagination(@RequestParam(required = false, defaultValue = "0") int page, @RequestParam(required = false,defaultValue = "5") int size){
 
-        return ResponseEntity.ok(service.getAllPages(page, size));
+        Page<UserRes> users = service.getAllPages(page, size);
+        return ResponseEntity.ok().body(
+                HttpResponse.builder()
+                        .timeStamp(LocalDateTime.now().toString())
+                        .statusCode(HttpStatus.OK.value())
+                        .path("doc_guardian/api/v1/user/pages")
+                        .status(HttpStatus.OK)
+                        .message("Users Pages has been retrieved successfully")
+                        .developerMessage("Users Pages has been retrieved  successfully")
+                        .data(Map.of("response", users))
+                        .build()
+        );
     }
 
     @GetMapping("{id}")
@@ -161,8 +172,20 @@ public class UserController {
     }
 
     @GetMapping("")
-    public ResponseEntity<List<UserRes>> getAll(){
-        return ResponseEntity.ok(service.getAll());
+    public ResponseEntity<HttpResponse> getAll(){
+
+        List<UserRes> users = service.getAll();
+        return ResponseEntity.ok().body(
+                HttpResponse.builder()
+                        .timeStamp(LocalDateTime.now().toString())
+                        .statusCode(HttpStatus.OK.value())
+                        .path("doc_guardian/api/v1/user/pages")
+                        .status(HttpStatus.OK)
+                        .message("Users Pages has been retrieved successfully")
+                        .developerMessage("Users Pages has been retrieved  successfully")
+                        .data(Map.of("response", users))
+                        .build()
+        );
     }
 
     @DeleteMapping("{id}")

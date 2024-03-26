@@ -7,6 +7,7 @@ import mhkif.yc.docguardian.dtos.responses.RoomRes;
 import mhkif.yc.docguardian.entities.Document;
 import mhkif.yc.docguardian.entities.Room;
 import mhkif.yc.docguardian.entities.User;
+import mhkif.yc.docguardian.exceptions.BadRequestException;
 import mhkif.yc.docguardian.exceptions.NotFoundException;
 import mhkif.yc.docguardian.repositories.DocumentRepository;
 import mhkif.yc.docguardian.repositories.RoomRepository;
@@ -85,9 +86,12 @@ public class DocumentServiceImpl implements DocumentService {
 
     @Override
     public DocumentRes create(DocumentReq request) {
-        userRepository.findById(request.getSender().getId()).orElseThrow(() -> new NotFoundException("User sender not found"));
+        User user = userRepository.findById(request.getSender().getId()).orElseThrow(() -> new NotFoundException("User sender not found"));
         Room room = roomRepository.findById(request.getRoom().getId()).orElseThrow(() -> new NotFoundException("Room not found"));
-
+        boolean isBelong = room.getUsers().contains(user);
+        if(!isBelong){
+            throw new BadRequestException("This User");
+        }
         Document document = mapper.map(request, Document.class);
         document.setDocUrl(cloudinaryService.uploadFile(request.getDocUrl(), "room_docs"));
         repository.save(document);

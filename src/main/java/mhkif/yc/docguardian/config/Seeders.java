@@ -46,20 +46,23 @@ public class Seeders implements CommandLineRunner {
 
         User user2 = new User();
         user2.setFirst_name("Mohammed");
-        user2.setLast_name("Achkif");
-        user2.setEmail("medachkif@gmail.com");
+        user2.setLast_name("Amin");
+        user2.setEmail("medamin@gmail.com");
         user2.setPassword(encoder.encode("aqwzsxedc"));
         user2.setPhone("0781311145");
         user2.setRole(USER);
+        user.setEnabled(true);
+
         user2.setCreatedAt(LocalDateTime.now());
 
         User user3 = new User();
         user3.setFirst_name("Ahmed");
-        user3.setLast_name("RokenEddine");
+        user3.setLast_name("Elhamel");
         user3.setEmail("ahmed@gmail.com");
         user3.setPassword(encoder.encode("aqwzsxedc"));
         user3.setPhone("0791311145");
         user3.setRole(USER);
+        user.setEnabled(true);
         user3.setCreatedAt(LocalDateTime.now());
 
         List<User> users = List.of(user, user2, user3);
@@ -69,11 +72,12 @@ public class Seeders implements CommandLineRunner {
     private void createAdmin(UserRepository repository){
 
         User user = new User();
-        user.setFirst_name("Abdelmalek");
-        user.setLast_name("Achkif");
+        user.setFirst_name("Admin");
+        user.setLast_name("Admin");
         user.setEmail("malikhkif@gmail.com");
         user.setPassword(encoder.encode("aqwzsxedc"));
         user.setPhone("0771311145");
+        user.setEnabled(true);
         user.setRole(ADMIN);
         user.setCreatedAt(LocalDateTime.now());
 
